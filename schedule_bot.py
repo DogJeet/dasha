@@ -305,7 +305,7 @@ def _has_any_conflict(schedule_data: dict):
 # -----------------------------
 # Telegram handlers
 # -----------------------------
-async def start(update: Update, context: CallbackContext):
+def start(update: Update, context: CallbackContext):
     text = (
         "Привет! Я бот для автоматического создания школьного расписания.\n\n"
         "Команды:\n"
@@ -321,10 +321,10 @@ async def start(update: Update, context: CallbackContext):
         "/show_schedule [класс]\n"
         "/reset"
     )
-    await update.message.reply_text(text)
+    update.message.reply_text(text)
 
 
-async def help_command(update: Update, context: CallbackContext):
+def help_command(update: Update, context: CallbackContext):
     text = (
         "Инструкция:\n"
         "1) Добавьте классы: /add_class 7A\n"
@@ -335,40 +335,40 @@ async def help_command(update: Update, context: CallbackContext):
         "6) Сгенерируйте: /generate\n"
         "7) Посмотрите расписание: /show_schedule или /show_schedule 7A"
     )
-    await update.message.reply_text(text)
+    update.message.reply_text(text)
 
 
-async def add_class(update: Update, context: CallbackContext):
+def add_class(update: Update, context: CallbackContext):
     if not context.args:
-        await update.message.reply_text("Ошибка: используйте /add_class <название>")
+        update.message.reply_text("Ошибка: используйте /add_class <название>")
         return
 
     class_name = " ".join(context.args).strip()
     if class_name in classes:
-        await update.message.reply_text("Класс уже существует")
+        update.message.reply_text("Класс уже существует")
         return
 
     classes[class_name] = {"name": class_name}
-    await update.message.reply_text("Класс добавлен")
+    update.message.reply_text("Класс добавлен")
 
 
-async def add_subject(update: Update, context: CallbackContext):
+def add_subject(update: Update, context: CallbackContext):
     if not context.args:
-        await update.message.reply_text("Ошибка: используйте /add_subject <название>")
+        update.message.reply_text("Ошибка: используйте /add_subject <название>")
         return
 
     subj = " ".join(context.args).strip()
     if subj in subjects:
-        await update.message.reply_text("Предмет уже существует")
+        update.message.reply_text("Предмет уже существует")
         return
 
     subjects[subj] = {"name": subj}
-    await update.message.reply_text("Предмет добавлен")
+    update.message.reply_text("Предмет добавлен")
 
 
-async def add_teacher(update: Update, context: CallbackContext):
+def add_teacher(update: Update, context: CallbackContext):
     if len(context.args) < 2:
-        await update.message.reply_text(
+        update.message.reply_text(
             "Ошибка: используйте /add_teacher <ФИО> <предмет1,предмет2,...>"
         )
         return
@@ -378,7 +378,7 @@ async def add_teacher(update: Update, context: CallbackContext):
     teacher_subjects = [s.strip() for s in subject_str.split(",") if s.strip()]
 
     if not teacher_subjects:
-        await update.message.reply_text("Ошибка: не указаны предметы")
+        update.message.reply_text("Ошибка: не указаны предметы")
         return
 
     # Автоматически добавляем предметы, если их еще нет
@@ -391,12 +391,12 @@ async def add_teacher(update: Update, context: CallbackContext):
         "subjects": set(teacher_subjects),
     }
 
-    await update.message.reply_text("Учитель добавлен")
+    update.message.reply_text("Учитель добавлен")
 
 
-async def set_load(update: Update, context: CallbackContext):
+def set_load(update: Update, context: CallbackContext):
     if len(context.args) < 3:
-        await update.message.reply_text(
+        update.message.reply_text(
             "Ошибка: используйте /set_load <класс> <предмет> <часы_в_неделю>"
         )
         return
@@ -406,11 +406,11 @@ async def set_load(update: Update, context: CallbackContext):
     subject_name = " ".join(context.args[1:-1]).strip()
 
     if class_name not in classes:
-        await update.message.reply_text("Ошибка: такого класса нет")
+        update.message.reply_text("Ошибка: такого класса нет")
         return
 
     if subject_name not in subjects:
-        await update.message.reply_text("Ошибка: такого предмета нет")
+        update.message.reply_text("Ошибка: такого предмета нет")
         return
 
     try:
@@ -418,52 +418,52 @@ async def set_load(update: Update, context: CallbackContext):
         if hours < 0:
             raise ValueError
     except ValueError:
-        await update.message.reply_text("Ошибка: часы должны быть целым числом >= 0")
+        update.message.reply_text("Ошибка: часы должны быть целым числом >= 0")
         return
 
     loads[class_name][subject_name] = hours
-    await update.message.reply_text("Нагрузка сохранена")
+    update.message.reply_text("Нагрузка сохранена")
 
 
-async def set_days(update: Update, context: CallbackContext):
+def set_days(update: Update, context: CallbackContext):
     if len(context.args) != 1:
-        await update.message.reply_text("Ошибка: используйте /set_days <1-7>")
+        update.message.reply_text("Ошибка: используйте /set_days <1-7>")
         return
 
     try:
         days = int(context.args[0])
     except ValueError:
-        await update.message.reply_text("Ошибка: нужно число от 1 до 7")
+        update.message.reply_text("Ошибка: нужно число от 1 до 7")
         return
 
     if not 1 <= days <= 7:
-        await update.message.reply_text("Ошибка: нужно число от 1 до 7")
+        update.message.reply_text("Ошибка: нужно число от 1 до 7")
         return
 
     settings["days"] = days
-    await update.message.reply_text(f"Количество учебных дней установлено: {days}")
+    update.message.reply_text(f"Количество учебных дней установлено: {days}")
 
 
-async def set_lessons(update: Update, context: CallbackContext):
+def set_lessons(update: Update, context: CallbackContext):
     if len(context.args) != 1:
-        await update.message.reply_text("Ошибка: используйте /set_lessons <1-12>")
+        update.message.reply_text("Ошибка: используйте /set_lessons <1-12>")
         return
 
     try:
         lessons_per_day = int(context.args[0])
     except ValueError:
-        await update.message.reply_text("Ошибка: нужно число от 1 до 12")
+        update.message.reply_text("Ошибка: нужно число от 1 до 12")
         return
 
     if not 1 <= lessons_per_day <= 12:
-        await update.message.reply_text("Ошибка: нужно число от 1 до 12")
+        update.message.reply_text("Ошибка: нужно число от 1 до 12")
         return
 
     settings["lessons_per_day"] = lessons_per_day
-    await update.message.reply_text(f"Уроков в день установлено: {lessons_per_day}")
+    update.message.reply_text(f"Уроков в день установлено: {lessons_per_day}")
 
 
-async def show_data(update: Update, context: CallbackContext):
+def show_data(update: Update, context: CallbackContext):
     lines = []
 
     lines.append("КЛАССЫ:")
@@ -502,12 +502,12 @@ async def show_data(update: Update, context: CallbackContext):
     lines.append(f"- Учебных дней: {settings['days']}")
     lines.append(f"- Уроков в день: {settings['lessons_per_day']}")
 
-    await update.message.reply_text("\n".join(lines))
+    update.message.reply_text("\n".join(lines))
 
 
-async def generate(update: Update, context: CallbackContext):
+def generate(update: Update, context: CallbackContext):
     ok, msg = create_schedule()
-    await update.message.reply_text(msg)
+    update.message.reply_text(msg)
 
 
 def _format_schedule_for_class(class_name: str):
@@ -563,11 +563,11 @@ def _format_full_schedule():
     return "\n".join(lines).strip()
 
 
-async def show_schedule_command(update: Update, context: CallbackContext):
+def show_schedule_command(update: Update, context: CallbackContext):
     if context.args:
         class_name = " ".join(context.args).strip()
         if class_name not in classes:
-            await update.message.reply_text("Ошибка: такого класса нет")
+            update.message.reply_text("Ошибка: такого класса нет")
             return
         text = _format_schedule_for_class(class_name)
     else:
@@ -576,13 +576,13 @@ async def show_schedule_command(update: Update, context: CallbackContext):
     # Telegram ограничивает длину сообщения, разобьем на части при необходимости
     max_len = 3900
     if len(text) <= max_len:
-        await update.message.reply_text(text)
+        update.message.reply_text(text)
     else:
         for i in range(0, len(text), max_len):
-            await update.message.reply_text(text[i : i + max_len])
+            update.message.reply_text(text[i : i + max_len])
 
 
-async def reset(update: Update, context: CallbackContext):
+def reset(update: Update, context: CallbackContext):
     classes.clear()
     teachers.clear()
     subjects.clear()
@@ -592,11 +592,37 @@ async def reset(update: Update, context: CallbackContext):
     settings["days"] = 5
     settings["lessons_per_day"] = 6
 
-    await update.message.reply_text("Все данные очищены")
+    update.message.reply_text("Все данные очищены")
 
 
-async def unknown(update: Update, context: CallbackContext):
-    await update.message.reply_text("Неизвестная команда. Используйте /help")
+def unknown(update: Update, context: CallbackContext):
+    update.message.reply_text("Неизвестная команда. Используйте /help")
+
+
+def _get_command_filter():
+    """Совместимость фильтра команд между версиями python-telegram-bot."""
+    if "filters" in globals() and hasattr(filters, "COMMAND"):
+        return filters.COMMAND
+    if "Filters" in globals() and hasattr(Filters, "command"):
+        return Filters.command
+    raise RuntimeError("Не удалось определить фильтр команд для текущей версии telegram.ext")
+
+
+def _register_handlers(add_handler):
+    """Регистрирует все handlers в переданный add_handler (app.add_handler / dispatcher.add_handler)."""
+    add_handler(CommandHandler("start", start))
+    add_handler(CommandHandler("help", help_command))
+    add_handler(CommandHandler("add_class", add_class))
+    add_handler(CommandHandler("add_teacher", add_teacher))
+    add_handler(CommandHandler("add_subject", add_subject))
+    add_handler(CommandHandler("set_load", set_load))
+    add_handler(CommandHandler("set_days", set_days))
+    add_handler(CommandHandler("set_lessons", set_lessons))
+    add_handler(CommandHandler("show_data", show_data))
+    add_handler(CommandHandler("generate", generate))
+    add_handler(CommandHandler("show_schedule", show_schedule_command))
+    add_handler(CommandHandler("reset", reset))
+    add_handler(MessageHandler(_get_command_filter(), unknown))
 
 
 def main():
@@ -606,27 +632,27 @@ def main():
             "Не найден BOT_TOKEN. Установите переменную окружения и запустите снова."
         )
 
-    app = ApplicationBuilder().token(token).build()
-
-    # Команды
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("help", help_command))
-    app.add_handler(CommandHandler("add_class", add_class))
-    app.add_handler(CommandHandler("add_teacher", add_teacher))
-    app.add_handler(CommandHandler("add_subject", add_subject))
-    app.add_handler(CommandHandler("set_load", set_load))
-    app.add_handler(CommandHandler("set_days", set_days))
-    app.add_handler(CommandHandler("set_lessons", set_lessons))
-    app.add_handler(CommandHandler("show_data", show_data))
-    app.add_handler(CommandHandler("generate", generate))
-    app.add_handler(CommandHandler("show_schedule", show_schedule_command))
-    app.add_handler(CommandHandler("reset", reset))
-
-    # Неизвестные команды
-    app.add_handler(MessageHandler(filters.COMMAND, unknown))
-
     logger.info("Бот запущен")
-    app.run_polling()
+
+    # PTB v20+
+    if "ApplicationBuilder" in globals():
+        app = ApplicationBuilder().token(token).build()
+        _register_handlers(app.add_handler)
+        app.run_polling()
+        return
+
+    # PTB v13 и ниже
+    if "Updater" in globals():
+        try:
+            updater = Updater(token, use_context=True)
+        except TypeError:
+            updater = Updater(token)
+        _register_handlers(updater.dispatcher.add_handler)
+        updater.start_polling()
+        updater.idle()
+        return
+
+    raise RuntimeError("В telegram.ext не найдены ApplicationBuilder и Updater")
 
 
 if __name__ == "__main__":
