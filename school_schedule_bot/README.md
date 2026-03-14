@@ -32,3 +32,11 @@ pytest -q
 - Хранение top-3 альтернатив в отдельной таблице.
 - Роли admin/viewer и JWT.
 - Веб-панель поверх существующего API.
+
+
+## Docker запуск
+```bash
+docker compose up --build
+```
+- `api` и `bot` используют единый `Dockerfile` и `entrypoint.sh`.
+- Режим выбирается переменной `APP_MODE` (`api`/`bot`), поэтому контейнер не пытается интерпретировать `Dockerfile` как Python-скрипт.
