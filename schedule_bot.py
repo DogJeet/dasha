@@ -600,11 +600,13 @@ def unknown(update: Update, context: CallbackContext):
 
 
 def _get_command_filter():
-    """Совместимость фильтра команд между версиями python-telegram-bot."""
-    if "filters" in globals() and hasattr(filters, "COMMAND"):
-        return filters.COMMAND
+    """Совместимость фильтра команд, с приоритетом для PTB 13.5."""
+    # PTB 13.x
     if "Filters" in globals() and hasattr(Filters, "command"):
         return Filters.command
+    # PTB 20+
+    if "filters" in globals() and hasattr(filters, "COMMAND"):
+        return filters.COMMAND
     raise RuntimeError("Не удалось определить фильтр команд для текущей версии telegram.ext")
 
 
@@ -634,25 +636,22 @@ def main():
 
     logger.info("Бот запущен")
 
-    # PTB v20+
+    # Приоритет: python-telegram-bot 13.5 (ваш случай)
+    if "Updater" in globals():
+        updater = Updater(token, use_context=True)
+        _register_handlers(updater.dispatcher.add_handler)
+        updater.start_polling()
+        updater.idle()
+        return
+
+    # Fallback для PTB 20+
     if "ApplicationBuilder" in globals():
         app = ApplicationBuilder().token(token).build()
         _register_handlers(app.add_handler)
         app.run_polling()
         return
 
-    # PTB v13 и ниже
-    if "Updater" in globals():
-        try:
-            updater = Updater(token, use_context=True)
-        except TypeError:
-            updater = Updater(token)
-        _register_handlers(updater.dispatcher.add_handler)
-        updater.start_polling()
-        updater.idle()
-        return
-
-    raise RuntimeError("В telegram.ext не найдены ApplicationBuilder и Updater")
+    raise RuntimeError("В telegram.ext не найдены Updater/ApplicationBuilder")
 
 
 if __name__ == "__main__":
